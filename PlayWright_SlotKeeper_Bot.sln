@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36811.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayWright_SlotKeeper_Bot", "PlayWright_SlotKeeper_Bot\PlayWright_SlotKeeper_Bot.csproj", "{973C5EA8-303D-4FBD-98AC-4442422288EB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{973C5EA8-303D-4FBD-98AC-4442422288EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{973C5EA8-303D-4FBD-98AC-4442422288EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{973C5EA8-303D-4FBD-98AC-4442422288EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{973C5EA8-303D-4FBD-98AC-4442422288EB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8A35A5D8-97DD-4844-AB99-2D2EA637680B}
+	EndGlobalSection
+EndGlobal
