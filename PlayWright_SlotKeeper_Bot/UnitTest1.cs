@@ -21,7 +21,7 @@ class Program
         await using var browser = await playwright.Chromium.LaunchAsync();
         var page = await browser.NewPageAsync();
 
-        Console.WriteLine("Бот запущено. Починаю моніторинг...");
+        Console.WriteLine("Bot monitors");
 
         while (true)
         {
@@ -29,7 +29,6 @@ class Program
             {
                 try
                 {
-                    Console.WriteLine($"Перевірка: {url}");
                     await page.GotoAsync(url);
                     await page.WaitForTimeoutAsync(5000);
 
@@ -37,10 +36,10 @@ class Program
 
                     if (availableDays > 0)
                     {
-                        Console.WriteLine($"!!! ЗНАЙДЕНО СЛОТ: {url}");
+                        Console.WriteLine($"!!! SLOT FOUND: {url}");
 
                         using var httpClient = new HttpClient();
-                        string message = $"Вільний слот доступний тут: {url}";
+                        string message = $"A slot is available here: {url}";
 
                         string tgUrl = $"https://api.telegram.org/bot{botToken}/sendMessage?chat_id={chatId}&text={Uri.EscapeDataString(message)}";
 
@@ -49,7 +48,7 @@ class Program
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Помилка при перевірці {url}: {ex.Message}");
+                    Console.WriteLine($"Error during checking {url}: {ex.Message}");
                 }
 
                 await Task.Delay(10000);
