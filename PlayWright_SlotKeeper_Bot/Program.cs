@@ -8,14 +8,8 @@ class Program
 {
     static async Task Main()
     {
-
         string botToken = "8710843756:AAGBdfHxcFrfLz2a32olOAJQgBD50OG0o6Q";
         string chatId = "631232411";
-
-        using (var httpClient = new HttpClient())
-        {
-            await httpClient.GetAsync($"https://api.telegram.org/bot{botToken}/sendMessage?chat_id={chatId}&text={Uri.EscapeDataString("Bot has access to tg")}");
-        }
 
         List<string> urls = new List<string>
         {
@@ -23,43 +17,69 @@ class Program
             "https://calendly.com/kasyk3/labs"
         };
 
+        bool[] visited = new bool[urls.Count];
+        DateTime lastResetDate = DateTime.Now.Date;
+
+        using (var httpClient = new HttpClient())
+        {
+            await httpClient.GetAsync($"https://api.telegram.org/bot{botToken}/sendMessage?chat_id={chatId}&text={Uri.EscapeDataString("Monitoring started")}");
+        }
+
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
-        var page = await browser.NewPageAsync();
 
-        Console.WriteLine("Bot monitors. It will send you a message when any slot will be availible.");
+        var context = await browser.NewContextAsync(new()
+        {
+            UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+            ViewportSize = new ViewportSize { Width = 1280, Height = 720 }
+        });
+
+        var page = await context.NewPageAsync();
+        Console.WriteLine($"[{DateTime.Now}] Bot started working...");
 
         while (true)
         {
-            foreach (var url in urls)
+            if (DateTime.Now.Date > lastResetDate)
             {
+                Console.WriteLine($"[{DateTime.Now}] New day detected. Resetting visited slots.");
+                for (int i = 0; i < visited.Length; i++) visited[i] = false;
+                lastResetDate = DateTime.Now.Date;
+            }
+
+            for (int i = 0; i < urls.Count; i++)
+            {
+                if (visited[i]) continue;
+
+                string url = urls[i];
                 try
                 {
-                    await page.GotoAsync(url);
-                    await page.GotoAsync(url, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+                    await page.GotoAsync(url, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle, Timeout = 60000 });
+                    await page.WaitForSelectorAsync("button", new PageWaitForSelectorOptions { Timeout = 20000 });
+                    await page.WaitForTimeoutAsync(3000);
 
-                    await page.WaitForTimeoutAsync(5000);
+                    var availableDays = await page.Locator("button[data-component='calendar-day']:not([disabled]):not([aria-disabled='true'])").AllAsync();
 
-                    var availableDays = await page.Locator("button[data-component='calendar-day']:not([disabled])").CountAsync();
-
-                    if (availableDays > 0)
+                    if (availableDays.Count == 0)
                     {
-                        Console.WriteLine($"!!! SLOT FOUND: {url}");
+                        availableDays = await page.Locator("td button:not([disabled]):not([aria-disabled='true'])").AllAsync();
+                    }
 
-                        using var httpClient = new HttpClient();
-                        string message = $"A slot is available here: {url}";
+                    if (availableDays.Count > 0)
+                    {
+                        Console.WriteLine($"!!!SLOT FOUND!!!: {url}");
+                        using var client = new HttpClient();
+                        string message = $"!!!SLOT FOUND!!!\nLink: {url}";
+                        await client.GetAsync($"https://api.telegram.org/bot{botToken}/sendMessage?chat_id={chatId}&text={Uri.EscapeDataString(message)}");
 
-                        string tgUrl = $"https://api.telegram.org/bot{botToken}/sendMessage?chat_id={chatId}&text={Uri.EscapeDataString(message)}";
-
-                        await httpClient.GetAsync(tgUrl);
+                        visited[i] = true;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error during checking {url}: {ex.Message}");
+                    Console.WriteLine($"Error checking {url}: {ex.Message}");
                 }
 
-                await Task.Delay(10000);
+                await Task.Delay(15000);
             }
 
             await Task.Delay(60000);
